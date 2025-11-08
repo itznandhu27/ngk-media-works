@@ -183,7 +183,7 @@
       div.className = mine;
       const time = new Date(data.time).toLocaleTimeString();
       // FIXED: build innerHTML using a string template
-      div.innerHTML = <b>${data.name}</b> <small>${time}</small><br>${data.text};
+      div.innerHTML = `<b>${data.name}</b> <small>${time}</small><br>${data.text}`;
       chatDiv.appendChild(div);
       chatDiv.scrollTop = chatDiv.scrollHeight;
     });
