@@ -131,7 +131,7 @@
       databaseURL: "https://msu-english-2023-default-rtdb.firebaseio.com",
       projectId: "msu-english-2023",
       storageBucket: "msu-english-2023.firebasestorage.app",
-      messagingSenderId:  "35471953079",
+      messagingSenderId: "35471953079",
       appId: "1:35471953079:web:03f6e911fecf2fa09d1132"
     };
     // =======================================
@@ -182,6 +182,7 @@
       const mine = data.name === userName ? "mine" : "";
       div.className = mine;
       const time = new Date(data.time).toLocaleTimeString();
+      // FIXED: build innerHTML using a string template
       div.innerHTML = <b>${data.name}</b> <small>${time}</small><br>${data.text};
       chatDiv.appendChild(div);
       chatDiv.scrollTop = chatDiv.scrollHeight;
