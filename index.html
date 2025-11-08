@@ -3,41 +3,189 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>NGK Digital</title>
+  <title>MSU 2023 English Chat</title>
   <style>
     body {
       font-family: Arial, sans-serif;
-      background: white;
-      color: #003399;
-      text-align: center;
+      background: linear-gradient(180deg, #e8f0ff, #ffffff);
       margin: 0;
-      padding: 50px;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
     }
-    h1 {
-      font-size: 2.5rem;
-      color: #003399;
-    }
-    p {
-      font-size: 1.2rem;
-      color: #333;
-    }
-    button {
-      background-color: #003399;
+    header {
+      background: #003399;
       color: white;
-      padding: 12px 20px;
+      padding: 14px;
+      text-align: center;
+      font-size: 20px;
+      font-weight: bold;
+      letter-spacing: 0.5px;
+    }
+    #chat {
+      flex: 1;
+      overflow-y: auto;
+      padding: 10px;
+      background: white;
+      border-top: 2px solid #ccd8ff;
+      border-bottom: 2px solid #ccd8ff;
+    }
+    #chat div {
+      margin: 6px 0;
+      padding: 6px 10px;
+      border-radius: 8px;
+      background: #eef4ff;
+    }
+    #chat .mine {
+      background: #cfe2ff;
+      text-align: right;
+    }
+    footer {
+      display: flex;
+      padding: 8px;
+      background: #e1e8ff;
+      border-top: 1px solid #ccd8ff;
+    }
+    input, button {
+      padding: 10px;
       border: none;
       border-radius: 6px;
+      font-size: 15px;
+    }
+    input {
+      flex: 1;
+      margin-right: 6px;
+    }
+    button {
+      background: #003399;
+      color: white;
       cursor: pointer;
-      font-size: 1rem;
     }
     button:hover {
-      background-color: #002080;
+      background: #002266;
+    }
+    #loginBox {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    #loginBox div {
+      background: white;
+      padding: 25px;
+      border-radius: 10px;
+      text-align: center;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    }
+    #loginBox input {
+      width: 80%;
+      padding: 8px;
+      margin: 6px 0;
+      border-radius: 6px;
+      border: 1px solid #ccd8ff;
+    }
+    #error {
+      color: red;
+      display: none;
+      margin-top: 5px;
+      font-size: 14px;
     }
   </style>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
 </head>
 <body>
-  <h1>Welcome to NGK Digital</h1>
-  <p>Powering brands. Amplifying impact.</p>
-  <button>Let's Work Together</button>
+  <header>MSU 2023 English</header>
+
+  <div id="chat"></div>
+
+  <footer>
+    <input id="msgBox" placeholder="Type message..." />
+    <button id="sendBtn">Send</button>
+  </footer>
+
+  <!-- Login / password box -->
+  <div id="loginBox">
+    <div>
+      <h3>Welcome to MSU 2023 English Chatroom</h3>
+      <p><input id="passBox" type="password" placeholder="Room Password"></p>
+      <p><input id="nameBox" type="text" placeholder="Your Name"></p>
+      <button id="enterBtn">Enter Chat</button>
+      <p id="error">Wrong password or empty name!</p>
+    </div>
+  </div>
+
+  <script>
+    // Room password
+    const PASSWORD = "Mano@2023";
+
+    // === Paste your Firebase config here ===
+    const firebaseConfig = {
+      apiKey: "AIzaSyAdqpK1-p4VyYkpxInGyOBr7nYsC504Hr4",
+      authDomain: "msu-english-2023.firebaseapp.com",
+      databaseURL: "https://msu-english-2023-default-rtdb.firebaseio.com",
+      projectId: "msu-english-2023",
+      storageBucket: "msu-english-2023.firebasestorage.app",
+      messagingSenderId:  "35471953079",
+      appId: "1:35471953079:web:03f6e911fecf2fa09d1132"
+    };
+    // =======================================
+
+    // Firebase setup
+    const app = firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    // Get HTML elements
+    const loginBox = document.getElementById("loginBox");
+    const passBox = document.getElementById("passBox");
+    const nameBox = document.getElementById("nameBox");
+    const enterBtn = document.getElementById("enterBtn");
+    const errorMsg = document.getElementById("error");
+
+    const chatDiv = document.getElementById("chat");
+    const msgBox = document.getElementById("msgBox");
+    const sendBtn = document.getElementById("sendBtn");
+
+    let userName = "";
+
+    // Login
+    enterBtn.onclick = () => {
+      if (passBox.value === PASSWORD && nameBox.value.trim() !== "") {
+        userName = nameBox.value.trim();
+        loginBox.style.display = "none";
+      } else {
+        errorMsg.style.display = "block";
+      }
+    };
+
+    // Send message
+    sendBtn.onclick = () => {
+      const text = msgBox.value.trim();
+      if (!text) return;
+      db.ref("messages").push({
+        name: userName,
+        text: text,
+        time: Date.now()
+      });
+      msgBox.value = "";
+    };
+
+    // Show messages in real-time
+    db.ref("messages").on("child_added", snap => {
+      const data = snap.val();
+      const div = document.createElement("div");
+      const mine = data.name === userName ? "mine" : "";
+      div.className = mine;
+      const time = new Date(data.time).toLocaleTimeString();
+      div.innerHTML = <b>${data.name}</b> <small>${time}</small><br>${data.text};
+      chatDiv.appendChild(div);
+      chatDiv.scrollTop = chatDiv.scrollHeight;
+    });
+  </script>
 </body>
 </html>
